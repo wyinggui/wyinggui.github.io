@@ -1,0 +1,76 @@
+---
+layout: default
+---
+<div id="post">
+  {{ content }}
+  {% if page.file %}
+    <div>
+        <a href="{{ page.file }}">打开文件</a>
+        <embed src="{{ page.file }}" style="width: 100%; height: 600px;"  type="application/pdf" />
+    </div>
+  {% endif %}
+</div>
+
+<div id="related">
+  <h2>相关文章</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+
+<script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
+<script src="//mozilla.github.io/pdf.js/web/pdf_viewer.js"></script>
+<script>
+var fileurl = "/files/16Pixelwise_View_Selection_for_Unstructured.pdf"
+</script>
+
+
+
+
+<script>
+// If absolute URL from the remote server is provided, configure the CORS
+// header on that server.
+
+
+// Loaded via <script> tag, create shortcut to access PDF.js exports.
+var pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+// The workerSrc property shall be specified.
+pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+// Asynchronous download of PDF
+var loadingTask = pdfjsLib.getDocument(fileurl);
+loadingTask.promise.then(function(pdf) {
+  console.log('PDF loaded');
+  
+  // Fetch the first page
+  var pageNumber = 2;
+  pdf.getPage(pageNumber).then(function(page) {
+    console.log('Page loaded');
+    
+    var scale = 1.4;
+    var viewport = page.getViewport(scale);
+
+    // Prepare canvas using PDF page dimensions
+    var canvas = document.getElementById('the-canvas');
+    var context = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    // Render PDF page into canvas context
+    var renderContext = {
+      canvasContext: context,
+      viewport: viewport
+    };
+    var renderTask = page.render(renderContext);
+    renderTask.then(function () {
+      console.log('Page rendered');
+    });
+  });
+}, function (reason) {
+  // PDF loading error
+  console.error(reason);
+});
+</script>
